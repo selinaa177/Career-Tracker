@@ -1,0 +1,455 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>我不想当班主任了.exe</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Noto+Sans+SC:wght@300;400;500;600&display=swap');
+:root{--bg:#0f0f0f;--bg2:#181818;--bg3:#222;--border:#2a2a2a;--border2:#333;--text:#e8e6e0;--text2:#888;--text3:#555;--accent:#c8f060;--red:#ff6b5a;--amber:#f5a623;--blue:#5b9cf6;--purple:#a78bfa;--mono:'DM Mono',monospace;--sans:'Noto Sans SC',sans-serif}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;background:var(--bg);color:var(--text);font-family:var(--sans);font-size:14px;line-height:1.5}
+.shell{display:flex;flex-direction:column;height:100vh;max-width:480px;margin:0 auto}
+.header{padding:16px 20px 12px;border-bottom:1px solid var(--border);flex-shrink:0}
+.header-top{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:10px}
+.header-title{font-size:13px;font-weight:500;letter-spacing:.08em;color:var(--text2);font-family:var(--mono);text-transform:uppercase}
+.header-pct{font-family:var(--mono);font-size:22px;color:var(--accent)}
+.header-bar{height:3px;background:var(--border);border-radius:2px;overflow:hidden}
+.header-bar-fill{height:100%;background:var(--accent);border-radius:2px;transition:width .4s}
+.header-sub{display:flex;gap:16px;margin-top:8px}
+.header-stat{font-family:var(--mono);font-size:11px;color:var(--text3)}
+.header-stat span{color:var(--text2)}
+.nav{display:flex;border-bottom:1px solid var(--border);flex-shrink:0}
+.nav-btn{flex:1;padding:10px 4px;font-size:11px;letter-spacing:.04em;text-transform:uppercase;font-family:var(--mono);color:var(--text3);background:none;border:none;cursor:pointer;border-bottom:2px solid transparent;transition:all .15s}
+.nav-btn.active{color:var(--accent);border-bottom-color:var(--accent)}
+.main{flex:1;overflow-y:auto;padding:16px 20px}
+.main::-webkit-scrollbar{width:3px}
+.main::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px}
+.view{display:none}.view.active{display:block}
+.overview-stats{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:20px}
+.ostat{background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:12px}
+.ostat-label{font-size:10px;color:var(--text3);font-family:var(--mono);text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px}
+.ostat-val{font-size:20px;font-family:var(--mono);color:var(--text)}
+.ostat-val .unit{font-size:12px;color:var(--text3)}
+.dim-section{margin-bottom:24px}
+.dim-label{font-size:10px;color:var(--text3);font-family:var(--mono);text-transform:uppercase;letter-spacing:.08em;margin-bottom:10px;padding-bottom:6px;border-bottom:1px solid var(--border)}
+.dim-row{display:flex;align-items:center;gap:10px;margin-bottom:8px;cursor:pointer;padding:6px 0}
+.dim-row:hover .dim-name{color:var(--text)}
+.dim-name{font-size:13px;color:var(--text2);flex:1;transition:color .15s}
+.dim-bar{width:80px;height:3px;background:var(--border);border-radius:2px;overflow:hidden;flex-shrink:0}
+.dim-bar-fill{height:100%;border-radius:2px}
+.dim-pct{font-family:var(--mono);font-size:11px;color:var(--text3);min-width:28px;text-align:right}
+.filter-row{display:flex;gap:6px;margin-bottom:16px;overflow-x:auto;padding-bottom:4px}
+.filter-row::-webkit-scrollbar{display:none}
+.filter-btn{font-size:11px;font-family:var(--mono);padding:4px 10px;border-radius:20px;border:1px solid var(--border2);background:none;color:var(--text3);cursor:pointer;white-space:nowrap;transition:all .15s}
+.filter-btn.active{border-color:var(--accent);color:var(--accent);background:rgba(200,240,96,.06)}
+.skill-card{background:var(--bg2);border:1px solid var(--border);border-radius:10px;margin-bottom:10px;overflow:hidden}
+.skill-header{padding:14px 16px;cursor:pointer;display:flex;align-items:center;gap:10px}
+.skill-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
+.skill-info{flex:1;min-width:0}
+.skill-name{font-size:14px;font-weight:500;color:var(--text);margin-bottom:2px}
+.skill-meta{display:flex;align-items:center;gap:8px}
+.skill-prog-text{font-size:11px;font-family:var(--mono);color:var(--text3)}
+.skill-badge{font-size:10px;font-family:var(--mono);padding:1px 6px;border-radius:3px}
+.badge-red{background:rgba(255,107,90,.12);color:var(--red)}
+.badge-amber{background:rgba(245,166,35,.12);color:var(--amber)}
+.badge-blue{background:rgba(91,156,246,.12);color:var(--blue)}
+.badge-gray{background:rgba(136,135,128,.12);color:var(--text2)}
+.skill-chevron{font-size:10px;color:var(--text3);transition:transform .2s;flex-shrink:0}
+.skill-chevron.open{transform:rotate(180deg)}
+.skill-prog-bar{height:2px;background:var(--border);margin:0 16px}
+.skill-prog-fill{height:100%;transition:width .3s}
+.skill-body{display:none;padding:12px 16px 14px;border-top:1px solid var(--border)}
+.skill-body.open{display:block}
+.skill-desc{font-size:12px;color:var(--text3);margin-bottom:12px;line-height:1.6}
+.skill-covers{font-size:11px;color:var(--text3);margin-bottom:12px}
+.cover-tag{display:inline-block;font-family:var(--mono);background:var(--bg3);border-radius:3px;padding:1px 5px;margin:2px 2px 0 0;font-size:10px}
+.task-group{margin-bottom:14px}
+.task-group-label{font-size:10px;font-family:var(--mono);color:var(--text3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px}
+.task-item{display:flex;align-items:flex-start;gap:10px;padding:7px 0;border-bottom:1px solid var(--border)}
+.task-item:last-child{border-bottom:none}
+.task-cb{width:16px;height:16px;border:1px solid var(--border2);border-radius:3px;flex-shrink:0;cursor:pointer;display:flex;align-items:center;justify-content:center;margin-top:1px;transition:all .15s}
+.task-cb.checked{background:var(--accent);border-color:var(--accent)}
+.task-cb.checked::after{content:'✓';font-size:10px;color:#000;font-weight:600}
+.task-text-wrap{flex:1}
+.task-text{font-size:13px;color:var(--text);line-height:1.45;transition:color .15s}
+.task-text.done{color:var(--text3);text-decoration:line-through}
+.task-hint{font-size:11px;color:var(--text3);margin-top:2px;line-height:1.4}
+.phase-card{background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:16px;margin-bottom:10px;position:relative;overflow:hidden}
+.phase-card::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px}
+.phase-1::before{background:var(--accent)}.phase-2::before{background:var(--amber)}.phase-3::before{background:var(--blue)}.phase-4::before{background:var(--purple)}
+.phase-time{font-family:var(--mono);font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px}
+.phase-title{font-size:15px;font-weight:500;margin-bottom:4px}
+.phase-sub{font-size:12px;color:var(--text3);margin-bottom:10px;line-height:1.5}
+.phase-items{list-style:none}.phase-items li{font-size:13px;color:var(--text2);padding:3px 0 3px 12px;position:relative;line-height:1.45}
+.phase-items li::before{content:'–';position:absolute;left:0;color:var(--text3)}
+.log-form{background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:14px 16px;margin-bottom:16px}
+.log-form textarea{width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:6px;padding:10px;font-size:13px;color:var(--text);font-family:var(--sans);resize:none;min-height:80px;outline:none}
+.log-form textarea:focus{border-color:var(--border2)}
+.log-form textarea::placeholder{color:var(--text3)}
+.log-form-row{display:flex;gap:8px;margin-top:10px;align-items:center}
+.log-select,.log-mins{background:var(--bg3);border:1px solid var(--border);border-radius:6px;padding:7px 10px;font-size:12px;color:var(--text2);font-family:var(--sans);outline:none}
+.log-select{flex:1}.log-mins{width:90px}
+.log-submit{padding:7px 16px;background:var(--accent);color:#000;border:none;border-radius:6px;font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap;font-family:var(--sans)}
+.log-entry{padding:10px 0;border-bottom:1px solid var(--border)}
+.log-entry:last-child{border-bottom:none}
+.log-entry-meta{font-family:var(--mono);font-size:10px;color:var(--text3);margin-bottom:4px;display:flex;gap:8px}
+.log-skill-tag{color:var(--blue)}.log-mins-tag{color:var(--amber)}
+.log-entry-text{font-size:13px;color:var(--text2);line-height:1.5}
+.empty-state{text-align:center;padding:40px 0;font-size:13px;color:var(--text3)}
+.sync-badge{font-family:var(--mono);font-size:10px;padding:2px 8px;border-radius:10px;background:rgba(200,240,96,.08);color:var(--accent);border:1px solid rgba(200,240,96,.2)}
+</style>
+</head>
+<body>
+<div class="shell">
+<div class="header">
+<div class="header-top">
+<div><div class="header-title">我不想当班主任了.exe</div>
+<div class="header-sub"><div class="header-stat">完成 <span id="hDone">0</span>/<span id="hTotal">0</span></div><div class="header-stat">学习 <span id="hHours">0</span>h</div><div class="header-stat">记录 <span id="hLogs">0</span>条</div></div></div>
+<div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px"><div class="header-pct" id="hPct">0%</div><div class="sync-badge" id="syncBadge">同步中...</div></div>
+</div>
+<div class="header-bar"><div class="header-bar-fill" id="hBar" style="width:0%"></div></div>
+</div>
+<div class="nav">
+<button class="nav-btn active" onclick="switchTab('overview')">总览</button>
+<button class="nav-btn" onclick="switchTab('skills')">技能</button>
+<button class="nav-btn" onclick="switchTab('timeline')">计划</button>
+<button class="nav-btn" onclick="switchTab('log')">日志</button>
+</div>
+<div class="main">
+<div id="view-overview" class="view active"><div class="overview-stats" id="oStats"></div><div id="oDims"></div></div>
+<div id="view-skills" class="view"><div class="filter-row" id="filterRow"></div><div id="skillsList"></div></div>
+<div id="view-timeline" class="view"></div>
+<div id="view-log" class="view">
+<div class="log-form"><textarea id="logText" placeholder="今天学了什么？遇到什么问题？"></textarea>
+<div class="log-form-row"><select class="log-select" id="logSkill"></select><input class="log-mins" id="logMins" type="number" placeholder="分钟" min="0"><button class="log-submit" onclick="addLog()">记录</button></div></div>
+<div id="logList"></div>
+</div>
+</div>
+</div>
+<script>
+const S=[
+{id:'sql',name:'SQL 数据查询',priority:'red',badge:'badge-red',priorityLabel:'最高优先',dim:'数据技能',covers:['运营/经营分析','经营分析','市场调研','跨境电商'],desc:'几乎所有目标岗位的硬性要求。从零开始，循序渐进。',groups:[
+{label:'环境搭建',tasks:[
+{id:'sql_0',text:'安装DBeaver + 连接SQLite',hint:'已完成 ✅'},
+{id:'sql_1',text:'理解数据库、表、行、列的概念',hint:'看一篇文章即可'},
+]},
+{label:'基础查询',tasks:[
+{id:'sql_2',text:'SELECT * FROM 表名 — 查询整张表',hint:''},
+{id:'sql_3',text:'SELECT 列1, 列2 — 指定列查询',hint:''},
+{id:'sql_4',text:'WHERE 条件过滤（=, >, <, LIKE, IN, BETWEEN）',hint:'6种方式都要会'},
+{id:'sql_5',text:'ORDER BY 排序（ASC/DESC）',hint:''},
+{id:'sql_6',text:'LIMIT 限制返回行数',hint:''},
+{id:'sql_7',text:'练习：用示例表做5条基础查询',hint:'SQLZoo在线练习'},
+]},
+{label:'聚合统计',tasks:[
+{id:'sql_8',text:'COUNT/SUM/AVG/MAX/MIN 聚合函数',hint:'经营分析天天用'},
+{id:'sql_9',text:'GROUP BY 分组统计',hint:'例：按城市统计销售额'},
+{id:'sql_10',text:'HAVING 过滤分组结果',hint:'和WHERE的区别要能说清'},
+{id:'sql_11',text:'练习：统计各类别的数量和平均金额',hint:''},
+]},
+{label:'多表连接',tasks:[
+{id:'sql_12',text:'理解主键(PK)和外键(FK)',hint:''},
+{id:'sql_13',text:'INNER JOIN — 取交集',hint:'最常用'},
+{id:'sql_14',text:'LEFT JOIN — 保留左表全部',hint:'第二常用'},
+{id:'sql_15',text:'练习：连接两表查询每个用户的订单数',hint:''},
+]},
+{label:'进阶用法',tasks:[
+{id:'sql_16',text:'子查询（嵌套SELECT）',hint:''},
+{id:'sql_17',text:'WITH AS (CTE) — 公共表表达式',hint:'面试常考'},
+{id:'sql_18',text:'窗口函数：ROW_NUMBER/RANK/LAG',hint:'经营分析必备'},
+{id:'sql_19',text:'CASE WHEN 条件分类',hint:'用来给用户打标签'},
+{id:'sql_20',text:'综合练习：完成5步以上的复杂查询',hint:''},
+]}
+]},
+{id:'python',name:'Python 数据分析',priority:'red',badge:'badge-red',priorityLabel:'最高优先',dim:'数据技能',covers:['经营分析','数据分析'],desc:'以pandas为核心，只学数据分析需要的部分。',groups:[
+{label:'环境搭建+基础语法',tasks:[
+{id:'py_0',text:'安装Anaconda + 打开Jupyter Notebook',hint:''},
+{id:'py_1',text:'变量、数据类型（字符串/数字/列表/字典）',hint:''},
+{id:'py_2',text:'if/for/while 控制流',hint:''},
+{id:'py_3',text:'定义函数 def',hint:''},
+{id:'py_4',text:'pip install pandas matplotlib',hint:''},
+]},
+{label:'pandas核心操作',tasks:[
+{id:'py_5',text:'pd.read_csv() / read_excel() 读取数据',hint:''},
+{id:'py_6',text:'head()/info()/describe() 查看数据',hint:'拿到新数据先跑这三行'},
+{id:'py_7',text:'筛选行和列（loc/iloc/条件过滤）',hint:''},
+{id:'py_8',text:'处理缺失值：isna()/fillna()/dropna()',hint:''},
+{id:'py_9',text:'数据类型转换 astype()',hint:''},
+{id:'py_10',text:'新增列和计算列',hint:''},
+]},
+{label:'分组与合并',tasks:[
+{id:'py_11',text:'groupby 分组统计',hint:''},
+{id:'py_12',text:'agg 自定义聚合',hint:''},
+{id:'py_13',text:'merge 合并DataFrame',hint:''},
+{id:'py_14',text:'pivot_table 透视表',hint:''},
+]},
+{label:'可视化',tasks:[
+{id:'py_15',text:'matplotlib：折线图/柱状图/散点图',hint:''},
+{id:'py_16',text:'seaborn：热力图/统计图表',hint:''},
+{id:'py_17',text:'图表美化：标题/坐标轴/颜色',hint:''},
+]},
+{label:'完整项目',tasks:[
+{id:'py_18',text:'完成一个完整Python分析项目',hint:'推荐Kaggle美妆/电商数据集'},
+{id:'py_19',text:'整理成Jupyter Notebook并写结论',hint:'简历作品'},
+]}
+]},
+{id:'excel',name:'Excel 进阶',priority:'amber',badge:'badge-amber',priorityLabel:'需强化',dim:'数据技能',covers:['运营/经营分析','经营分析','市场调研'],desc:'有基础，补Power Query和高级函数。',groups:[
+{label:'函数强化',tasks:[
+{id:'ex_0',text:'XLOOKUP / VLOOKUP 跨表查找',hint:''},
+{id:'ex_1',text:'SUMIFS/COUNTIFS 多条件统计',hint:''},
+{id:'ex_2',text:'INDEX+MATCH 灵活查找',hint:''},
+{id:'ex_3',text:'TEXT/DATE 日期函数',hint:''},
+{id:'ex_4',text:'IF/IFS/IFERROR 条件判断',hint:''},
+]},
+{label:'透视表进阶',tasks:[
+{id:'ex_5',text:'计算字段和计算项',hint:''},
+{id:'ex_6',text:'切片器和时间线控件',hint:''},
+{id:'ex_7',text:'值显示方式（百分比/环比/累计）',hint:''},
+]},
+{label:'Power Query',tasks:[
+{id:'ex_8',text:'连接多个数据源',hint:''},
+{id:'ex_9',text:'数据清洗：删除重复/填充空值/拆分列',hint:''},
+{id:'ex_10',text:'合并查询',hint:''},
+{id:'ex_11',text:'完成一个PQ数据整合项目',hint:''},
+]},
+{label:'动态图表',tasks:[
+{id:'ex_12',text:'带下拉菜单的动态图表',hint:''},
+{id:'ex_13',text:'条件格式做数据热力图',hint:''},
+]}
+]},
+{id:'bi',name:'BI工具（Power BI）',priority:'amber',badge:'badge-amber',priorityLabel:'需了解',dim:'数据技能',covers:['运营/经营分析','经营分析'],desc:'了解基础，会做一个看板即可。',groups:[
+{label:'基础入门',tasks:[
+{id:'bi_0',text:'下载安装Power BI Desktop',hint:'免费'},
+{id:'bi_1',text:'连接Excel/CSV数据源',hint:''},
+{id:'bi_2',text:'Power Query在BI中的使用',hint:''},
+{id:'bi_3',text:'制作基础图表',hint:''},
+{id:'bi_4',text:'DAX基础：CALCULATE/SUMX',hint:''},
+]},
+{label:'项目实战',tasks:[
+{id:'bi_5',text:'制作一个运营数据看板',hint:'截图保存，简历素材'},
+{id:'bi_6',text:'了解Tableau Public',hint:''},
+]}
+]},
+{id:'english',name:'英语恢复训练',priority:'red',badge:'badge-red',priorityLabel:'紧急优先',dim:'英语能力',covers:['海外市场','跨境电商','Web3翻译','PMO'],desc:'退化严重，必须立即启动，每天坚持，贯穿全程。',groups:[
+{label:'读（每日15-20分钟）',tasks:[
+{id:'en_0',text:'每天阅读1篇BBC商业新闻',hint:'bbc.com/news/business'},
+{id:'en_1',text:'每周精读1篇，记录不懂的句式',hint:''},
+{id:'en_2',text:'建立商务/外贸/数据分析词汇本',hint:''},
+]},
+{label:'写（每周）',tasks:[
+{id:'en_3',text:'每周写1封商务英文邮件',hint:'让AI帮忙批改'},
+{id:'en_4',text:'用英语写一段数据分析结论',hint:''},
+{id:'en_5',text:'外贸常用文件：报价单/合同术语',hint:'海外方向专项'},
+]},
+{label:'听说（每日15分钟）',tasks:[
+{id:'en_6',text:'每天跟读英文播客/TED 15分钟',hint:'How I Built This / TED Business'},
+{id:'en_7',text:'影子练习：跟着说，模仿语调',hint:''},
+{id:'en_8',text:'完成一次全英语模拟面试',hint:'可用AI练习'},
+]},
+{label:'外贸专项',tasks:[
+{id:'en_9',text:'Incoterms 2020：FOB/CIF/DDP等',hint:''},
+{id:'en_10',text:'国际结算：L/C / T/T基础',hint:''},
+{id:'en_11',text:'了解一个行业的出口流程（建议美妆）',hint:'结合兴趣'},
+]}
+]},
+{id:'kpi',name:'KPI体系搭建',priority:'amber',badge:'badge-amber',priorityLabel:'需学习',dim:'业务分析',covers:['运营管理/经营分析','PMO'],desc:'运营管理岗核心技能，理解指标拆解逻辑。',groups:[
+{label:'理论框架',tasks:[
+{id:'kpi_0',text:'理解KPI/OKR/BSC的区别',hint:''},
+{id:'kpi_1',text:'SMART原则：设定好的KPI',hint:''},
+{id:'kpi_2',text:'北极星指标（NSM）',hint:''},
+{id:'kpi_3',text:'指标树拆解业务问题',hint:'GMV=访客×转化率×客单价'},
+]},
+{label:'实操练习',tasks:[
+{id:'kpi_4',text:'为一个教育产品设计KPI体系',hint:'用你熟悉的行业'},
+{id:'kpi_5',text:'把业务目标拆到部门级和个人级',hint:''},
+{id:'kpi_6',text:'用Excel制作KPI跟踪表',hint:''},
+{id:'kpi_7',text:'了解绩效管理流程',hint:''},
+]}
+]},
+{id:'model',name:'数据分析模型',priority:'amber',badge:'badge-amber',priorityLabel:'需学习',dim:'业务分析',covers:['经营分析','数据分析','运营/经营分析'],desc:'业务分析常用的思维模型和框架。',groups:[
+{label:'用户分析模型',tasks:[
+{id:'md_0',text:'RFM模型：用R/F/M对用户分层',hint:'电商运营最常用'},
+{id:'md_1',text:'用户生命周期模型',hint:'拉新→留存→活跃→流失→召回'},
+{id:'md_2',text:'同期群分析（Cohort Analysis）',hint:'留存分析标准方法'},
+{id:'md_3',text:'练习：用Excel或Python做RFM分层',hint:''},
+]},
+{label:'业务诊断模型',tasks:[
+{id:'md_4',text:'漏斗分析：找出流失环节',hint:''},
+{id:'md_5',text:'A/B测试基本原理',hint:'理解原理即可'},
+{id:'md_6',text:'帕累托分析（80/20法则）',hint:''},
+{id:'md_7',text:'练习：为一个业务场景设计分析方案',hint:''},
+]}
+]},
+{id:'case',name:'真实数据分析案例',priority:'amber',badge:'badge-amber',priorityLabel:'需积累',dim:'业务分析',covers:['所有数据方向'],desc:'把技能用在真实数据上，产出简历作品。',groups:[
+{label:'案例准备',tasks:[
+{id:'ca_0',text:'注册Kaggle，浏览数据集',hint:'电商/美妆/用户行为'},
+{id:'ca_1',text:'了解数据集的字段含义',hint:''},
+]},
+{label:'案例一：用户行为分析',tasks:[
+{id:'ca_2',text:'选一个用户行为数据集',hint:''},
+{id:'ca_3',text:'完成RFM分层+留存率+流失分析',hint:''},
+{id:'ca_4',text:'输出2页分析报告',hint:'重点是结论和建议'},
+]},
+{label:'案例二：经营诊断',tasks:[
+{id:'ca_5',text:'选一个门店/区域运营数据集',hint:''},
+{id:'ca_6',text:'完成KPI达成+问题诊断+改进建议',hint:''},
+{id:'ca_7',text:'用PPT做汇报版本',hint:'面试材料'},
+]},
+{label:'包装现有经历',tasks:[
+{id:'ca_8',text:'梳理班主任工作中3个可量化成果',hint:''},
+{id:'ca_9',text:'用STAR格式写3个案例故事',hint:''},
+{id:'ca_10',text:'整理银行贷款审核经历',hint:'海外/金融方向有用'},
+]}
+]},
+{id:'research',name:'市场调研方法与工具',priority:'amber',badge:'badge-amber',priorityLabel:'需了解',dim:'业务分析',covers:['市场调研','用户研究'],desc:'市场调研岗核心技能，用户研究的基础。',groups:[
+{label:'方法论',tasks:[
+{id:'rs_0',text:'定性 vs 定量研究的区别',hint:''},
+{id:'rs_1',text:'问卷设计原则',hint:'避免引导性问题'},
+{id:'rs_2',text:'用户访谈技巧',hint:''},
+{id:'rs_3',text:'焦点小组(FGD)方法',hint:''},
+{id:'rs_4',text:'竞品分析框架',hint:''},
+]},
+{label:'工具',tasks:[
+{id:'rs_5',text:'问卷星/腾讯问卷使用',hint:''},
+{id:'rs_6',text:'SPSS基础操作',hint:'了解即可'},
+]},
+{label:'输出',tasks:[
+{id:'rs_8',text:'了解调研报告标准结构',hint:''},
+{id:'rs_9',text:'完成一份小型调研报告',hint:'可以调研美妆用户'},
+]}
+]},
+{id:'express',name:'分析报告与汇报',priority:'amber',badge:'badge-amber',priorityLabel:'需强化',dim:'分析表达',covers:['运营/经营分析','经营分析','市场调研'],desc:'把数据结论讲清楚是经营分析核心软技能。',groups:[
+{label:'结构化思维',tasks:[
+{id:'ex2_0',text:'金字塔原理：结论先行',hint:'必读'},
+{id:'ex2_1',text:'MECE原则',hint:''},
+{id:'ex2_2',text:'5W1H分析框架',hint:''},
+{id:'ex2_3',text:'鱼骨图/根因分析',hint:''},
+{id:'ex2_4',text:'练习：改写一份报告',hint:''},
+]},
+{label:'PPT汇报',tasks:[
+{id:'ex2_5',text:'选对图表类型',hint:'比较=柱状图，趋势=折线图'},
+{id:'ex2_6',text:'一页PPT只讲一个观点',hint:''},
+{id:'ex2_7',text:'高管汇报：结论+依据+建议',hint:''},
+{id:'ex2_8',text:'练习：做一份3页数据报告',hint:''},
+]}
+]},
+{id:'trade',name:'外贸基础知识',priority:'amber',badge:'badge-amber',priorityLabel:'需了解',dim:'业务知识',covers:['海外市场','跨境电商'],desc:'海外方向和跨境电商都需要的基础。',groups:[
+{label:'核心概念',tasks:[
+{id:'tr_0',text:'Incoterms 2020（FOB/CIF/DDP等）',hint:''},
+{id:'tr_1',text:'国际结算：L/C / T/T基础',hint:''},
+{id:'tr_2',text:'了解一个行业的出口流程',hint:'建议美妆/消费品'},
+]}
+]},
+{id:'crossborder',name:'跨境电商基础',priority:'amber',badge:'badge-amber',priorityLabel:'新增',dim:'业务知识',covers:['跨境电商运营'],desc:'了解主流平台和运营基础概念，结合美妆兴趣。',groups:[
+{label:'平台了解',tasks:[
+{id:'cb_0',text:'了解亚马逊/Temu/Shein/TikTok Shop各平台特点',hint:''},
+{id:'cb_1',text:'了解选品、Listing优化基本概念',hint:''},
+{id:'cb_2',text:'了解广告投放基础（CPC/ACoS）',hint:''},
+{id:'cb_3',text:'研究美妆品类在各平台的运营特点',hint:'结合兴趣'},
+{id:'cb_4',text:'分析2-3个成功美妆跨境品牌案例',hint:''},
+]}
+]},
+{id:'pmo',name:'PMO 方法论',priority:'blue',badge:'badge-blue',priorityLabel:'长期准备',dim:'业务知识',covers:['PMO方向'],desc:'不主投但持续学习，可考虑PMP认证。',groups:[
+{label:'知识框架',tasks:[
+{id:'pm_0',text:'五大过程组：启动/规划/执行/监控/收尾',hint:''},
+{id:'pm_1',text:'十大知识领域概览',hint:''},
+{id:'pm_2',text:'敏捷/Scrum基础',hint:''},
+{id:'pm_3',text:'WBS工作分解结构',hint:''},
+{id:'pm_4',text:'RACI矩阵',hint:''},
+{id:'pm_5',text:'甘特图制作',hint:''},
+]},
+{label:'实操与认证',tasks:[
+{id:'pm_6',text:'用PMO方法论重新梳理一个班主任项目',hint:'包装成PMO案例'},
+{id:'pm_7',text:'了解PMP认证报考要求',hint:''},
+]}
+]},
+{id:'web3',name:'Web3 基础',priority:'gray',badge:'badge-gray',priorityLabel:'按需',dim:'业务知识',covers:['Web3翻译'],desc:'仅朋友内推岗位，了解即可。',groups:[
+{label:'基础+翻译',tasks:[
+{id:'w3_0',text:'区块链/NFT/DeFi基础概念',hint:'1-2篇科普文章'},
+{id:'w3_1',text:'Web3 vs Web2核心区别',hint:''},
+{id:'w3_2',text:'整理Web3高频英文术语表',hint:'50个以上'},
+{id:'w3_3',text:'了解区块链行业活动形式',hint:''},
+{id:'w3_4',text:'评估朋友公司薪资结构和稳定性',hint:'固定薪资占比很重要'},
+]}
+]},
+{id:'ai_tools',name:'AI工具使用',priority:'amber',badge:'badge-amber',priorityLabel:'新增',dim:'效率工具',covers:['所有方向'],desc:'用AI加速学习和工作效率，也是求职加分项。',groups:[
+{label:'基础使用',tasks:[
+{id:'ai_0',text:'学会写好的prompt获取更好的回答',hint:''},
+{id:'ai_1',text:'用AI辅助写SQL（描述需求→生成→理解→改写）',hint:''},
+{id:'ai_2',text:'用AI辅助调试Python代码',hint:''},
+]},
+{label:'翻译与写作',tasks:[
+{id:'ai_3',text:'用DeepL+人工校对做翻译',hint:'翻译接单的工作流'},
+{id:'ai_4',text:'用AI生成分析报告框架和初稿',hint:''},
+{id:'ai_5',text:'用Grammarly检查英文写作',hint:''},
+]}
+]},
+{id:'interview',name:'面试准备',priority:'amber',badge:'badge-amber',priorityLabel:'新增',dim:'求职准备',covers:['所有方向'],desc:'行为面试、案例面试、常见问题。',groups:[
+{label:'基础准备',tasks:[
+{id:'iv_0',text:'写好2分钟自我介绍',hint:'我是谁/做过什么/为什么转行/能带来什么'},
+{id:'iv_1',text:'准备3个STAR核心案例',hint:'有具体数据'},
+{id:'iv_2',text:'准备20个常见面试问题的回答框架',hint:''},
+{id:'iv_3',text:'准备5个反问面试官的问题',hint:''},
+]},
+{label:'实战演练',tasks:[
+{id:'iv_4',text:'案例面试：5分钟说出分析思路',hint:''},
+{id:'iv_5',text:'做2-3次模拟面试',hint:'用AI或找朋友'},
+{id:'iv_6',text:'录音回听并改进',hint:''},
+]}
+]},
+{id:'resume',name:'简历写作',priority:'amber',badge:'badge-amber',priorityLabel:'新增',dim:'求职准备',covers:['所有方向'],desc:'跨行简历的包装策略。',groups:[
+{label:'简历制作',tasks:[
+{id:'rs2_0',text:'简历初稿：1页，突出数据+运营',hint:'多伦多大学放显眼位置'},
+{id:'rs2_1',text:'班主任经历改写成运营/分析语言',hint:'有量化数据'},
+{id:'rs2_2',text:'针对不同方向准备多版本',hint:'经营分析/跨境/海外各一版'},
+{id:'rs2_3',text:'让Claude逐行优化简历',hint:''},
+]}
+]}
+];
+
+const DIMS_ORDER=['数据技能','业务分析','分析表达','英语能力','业务知识','效率工具','求职准备'];
+const PHASES=[
+{n:1,time:'第1个月',color:'var(--accent)',title:'打基础 · 盘资产 · 恢复英语',sub:'SQL+英语双线并行，同时把5年经历转化成案例',items:['SQL基础到进阶（每天1小时）','英语恢复启动（每天30分钟：读15分+听说15分）','整理3个可量化工作案例（STAR格式）','Excel补Power Query','（可选）启动翻译副业接单']},
+{n:2,time:'第2个月',color:'var(--amber)',title:'建技能 · 做项目',sub:'Python入门并产出第一个完整分析项目',items:['Python/pandas入门（每天1小时）','完成第一个数据分析项目','KPI体系+数据分析模型学习','跨境电商平台基础了解','英语持续（每天30分钟）']},
+{n:3,time:'第3个月',color:'var(--blue)',title:'投简历 · 强表达',sub:'简历完成，开始投递，强化汇报能力',items:['简历初稿完成（多版本）','BOSS直聘/猎聘开始投递','PPT数据报告制作（面试材料）','英语商务写作+模拟面试','外贸/PMO并行入门']},
+{n:4,time:'第4个月',color:'var(--purple)',title:'面试 · 谈offer',sub:'全力应对面试和薪资谈判',items:['20个常见面试问题准备','2-3次模拟面试并复盘','薪资谈判（目标10-15K）','评估offer的成长空间']}
+];
+
+let checked={},logs=[],loaded=false,activeFilter='all',expanded={};
+
+async function loadState(){try{const r1=localStorage.getItem('ct_checked_v3');const r2=localStorage.getItem('ct_logs_v3');if(r1)checked=JSON.parse(r1);if(r2)logs=JSON.parse(r2)}catch(e){}loaded=true;setSyncBadge('本地存储');renderAll()}
+async function saveChecked(){try{localStorage.setItem('ct_checked_v3',JSON.stringify(checked));setSyncBadge('已保存')}catch(e){setSyncBadge('保存失败')}}
+async function saveLogs(){try{localStorage.setItem('ct_logs_v3',JSON.stringify(logs));setSyncBadge('已保存')}catch(e){setSyncBadge('保存失败')}}
+function setSyncBadge(t){const e=document.getElementById('syncBadge');if(e)e.textContent=t}
+function getProgress(s){const t=s.groups.flatMap(g=>g.tasks);const d=t.filter(t=>checked[t.id]).length;return{done:d,total:t.length,pct:t.length?Math.round(d/t.length*100):0}}
+function getTotals(){let d=0,t=0;S.forEach(s=>{const p=getProgress(s);d+=p.done;t+=p.total});return{done:d,total:t,pct:t?Math.round(d/t*100):0}}
+function getTotalMins(){return logs.reduce((a,l)=>a+(parseInt(l.mins)||0),0)}
+function dimColor(d){const m={'数据技能':'var(--accent)','业务分析':'var(--amber)','分析表达':'var(--blue)','英语能力':'var(--purple)','业务知识':'var(--text2)','效率工具':'var(--blue)','求职准备':'var(--red)'};return m[d]||'var(--text2)'}
+function dotColor(p){if(p==='red')return'var(--red)';if(p==='amber')return'var(--amber)';if(p==='blue')return'var(--blue)';return'var(--text3)'}
+function skillMap(){const m={};S.forEach(s=>m[s.id]=s.name);return m}
+
+function renderAll(){updateHeader();renderOverview();renderSkills();renderTimeline();renderLogSkillSelect();renderLog()}
+function updateHeader(){const t=getTotals();document.getElementById('hPct').textContent=t.pct+'%';document.getElementById('hDone').textContent=t.done;document.getElementById('hTotal').textContent=t.total;document.getElementById('hHours').textContent=Math.round(getTotalMins()/60);document.getElementById('hLogs').textContent=logs.length;document.getElementById('hBar').style.width=t.pct+'%'}
+
+function renderOverview(){const t=getTotals();const m=getTotalMins();document.getElementById('oStats').innerHTML=`<div class="ostat"><div class="ostat-label">总体完成</div><div class="ostat-val">${t.pct}<span class="unit">%</span></div></div><div class="ostat"><div class="ostat-label">任务完成</div><div class="ostat-val">${t.done}<span class="unit"> / ${t.total}</span></div></div><div class="ostat"><div class="ostat-label">累计学习</div><div class="ostat-val">${Math.round(m/60)}<span class="unit"> h</span></div></div><div class="ostat"><div class="ostat-label">学习记录</div><div class="ostat-val">${logs.length}<span class="unit"> 条</span></div></div>`;
+const dd={};DIMS_ORDER.forEach(d=>dd[d]={done:0,total:0,skills:[]});S.forEach(s=>{if(!dd[s.dim])dd[s.dim]={done:0,total:0,skills:[]};const p=getProgress(s);dd[s.dim].done+=p.done;dd[s.dim].total+=p.total;dd[s.dim].skills.push(s)});
+document.getElementById('oDims').innerHTML=DIMS_ORDER.map(dim=>{const d=dd[dim];if(!d||!d.skills.length)return'';return`<div class="dim-section"><div class="dim-label">${dim}</div>${d.skills.map(s=>{const sp=getProgress(s);return`<div class="dim-row" onclick="switchTab('skills');setFilter('${s.dim}');setTimeout(()=>toggleExpand('${s.id}'),100)"><div class="dim-name">${s.name}</div><div class="dim-bar"><div class="dim-bar-fill" style="width:${sp.pct}%;background:${dimColor(dim)}"></div></div><div class="dim-pct">${sp.pct}%</div></div>`}).join('')}</div>`}).join('')}
+
+function renderFilters(){const dims=['all',...DIMS_ORDER];const labels={all:'全部'};document.getElementById('filterRow').innerHTML=dims.map(d=>`<button class="filter-btn ${activeFilter===d?'active':''}" onclick="setFilter('${d}')">${labels[d]||d}</button>`).join('')}
+function setFilter(f){activeFilter=f;renderFilters();renderSkillList()}
+function renderSkills(){renderFilters();renderSkillList()}
+function renderSkillList(){const filtered=activeFilter==='all'?S:S.filter(s=>s.dim===activeFilter);document.getElementById('skillsList').innerHTML=filtered.map(skill=>{const p=getProgress(skill);const isOpen=expanded[skill.id];return`<div class="skill-card"><div class="skill-header" onclick="toggleExpand('${skill.id}')"><div class="skill-dot" style="background:${dotColor(skill.priority)}"></div><div class="skill-info"><div class="skill-name">${skill.name}</div><div class="skill-meta"><span class="skill-prog-text">${p.done}/${p.total} · ${p.pct}%</span><span class="skill-badge ${skill.badge}">${skill.priorityLabel}</span></div></div><div class="skill-chevron ${isOpen?'open':''}">▼</div></div><div class="skill-prog-bar"><div class="skill-prog-fill" style="width:${p.pct}%;background:${dotColor(skill.priority)}"></div></div><div class="skill-body ${isOpen?'open':''}"><div class="skill-desc">${skill.desc}</div><div class="skill-covers">覆盖方向：${skill.covers.map(c=>`<span class="cover-tag">${c}</span>`).join('')}</div>${skill.groups.map(g=>`<div class="task-group"><div class="task-group-label">${g.label}</div>${g.tasks.map(t=>`<div class="task-item"><div class="task-cb ${checked[t.id]?'checked':''}" onclick="toggleTask('${t.id}')"></div><div class="task-text-wrap"><div class="task-text ${checked[t.id]?'done':''}">${t.text}</div>${t.hint?`<div class="task-hint">${t.hint}</div>`:''}</div></div>`).join('')}</div>`).join('')}</div></div>`}).join('')}
+function toggleExpand(id){expanded[id]=!expanded[id];renderSkillList()}
+function toggleTask(id){checked[id]=!checked[id];saveChecked();updateHeader();renderSkillList();renderOverview()}
+
+function renderTimeline(){document.getElementById('view-timeline').innerHTML=PHASES.map(p=>`<div class="phase-card phase-${p.n}"><div class="phase-time">${p.time}</div><div class="phase-title">${p.title}</div><div class="phase-sub">${p.sub}</div><ul class="phase-items">${p.items.map(i=>`<li>${i}</li>`).join('')}</ul></div>`).join('')}
+function renderLogSkillSelect(){const sel=document.getElementById('logSkill');if(!sel)return;sel.innerHTML=`<option value="">选择技能...</option>`+S.map(s=>`<option value="${s.id}">${s.name}</option>`).join('')}
+function addLog(){const text=document.getElementById('logText').value.trim();if(!text)return;const skill=document.getElementById('logSkill').value;const mins=parseInt(document.getElementById('logMins').value)||0;const now=new Date();logs.unshift({date:now.toLocaleDateString('zh-CN',{month:'numeric',day:'numeric',weekday:'short'}),text,skill,mins,ts:now.getTime()});saveLogs();document.getElementById('logText').value='';document.getElementById('logMins').value='';updateHeader();renderLog()}
+function renderLog(){const list=document.getElementById('logList');if(!logs.length){list.innerHTML=`<div class="empty-state">还没有记录 · 从今天开始吧</div>`;return}const sm=skillMap();list.innerHTML=logs.map(l=>`<div class="log-entry"><div class="log-entry-meta"><span>${l.date}</span>${l.skill?`<span class="log-skill-tag">${sm[l.skill]||l.skill}</span>`:''}${l.mins?`<span class="log-mins-tag">${l.mins}min</span>`:''}</div><div class="log-entry-text">${l.text}</div></div>`).join('')}
+function switchTab(tab){const tabs=['overview','skills','timeline','log'];document.querySelectorAll('.nav-btn').forEach((b,i)=>b.classList.toggle('active',tabs[i]===tab));document.querySelectorAll('.view').forEach(v=>v.classList.toggle('active',v.id==='view-'+tab))}
+
+setSyncBadge('加载中...');loadState().catch(()=>{loaded=true;setSyncBadge('本地模式');renderAll()});
+</script>
+</body>
+</html>
